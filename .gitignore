@@ -63,3 +63,4 @@ target/
 
 # virtualenv
 venv/
+.idea/workspace.xml
