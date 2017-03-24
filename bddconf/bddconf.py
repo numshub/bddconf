@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import List
-<<<<<<< HEAD
 from collections import OrderedDict
-=======
->>>>>>> fe9561d9437af8402234486f9e600a542726eb25
 import openpyxl
 
 
@@ -31,17 +28,13 @@ class ConfigBDD:
 
     def __init__(self):
         self.attributes = []
-<<<<<<< HEAD
         self.variables = []
-=======
->>>>>>> fe9561d9437af8402234486f9e600a542726eb25
         self.mapping = None
         self.rules = None
 
     def append_attribute(self, attribute: Attribute):
         self.attributes.append(attribute)
 
-<<<<<<< HEAD
     def decompose(self):
         """Decompose in binary variables
         """
@@ -54,8 +47,6 @@ class ConfigBDD:
                                              n=n)
 
 
-=======
->>>>>>> fe9561d9437af8402234486f9e600a542726eb25
     def parse_workbook(self, filename: str):
         ws = openpyxl.load_workbook(filename).worksheets[0]
         for col in ws.iter_cols():
