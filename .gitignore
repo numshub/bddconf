@@ -63,4 +63,10 @@ target/
 
 # virtualenv
 venv/
+
+#PyCharm
 .idea/workspace.xml
+
+#temporary files
+~*.xls?
+~*.doc?
