@@ -70,3 +70,6 @@ venv/
 #temporary files
 ~*.xls?
 ~*.doc?
+
+#tests out folder
+tests/out/

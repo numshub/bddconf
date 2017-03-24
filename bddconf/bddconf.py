@@ -5,6 +5,7 @@ from collections import OrderedDict
 import openpyxl
 import math
 
+from dd import autoref as _bdd
 
 class Attribute:
 
@@ -19,17 +20,18 @@ class Attribute:
     def size(self, base=2):
         return math.floor(math.log(self.len() - 1, base)) + 1
 
-    def decompose(self) -> (OrderedDict, List):
+    def decompose(self) -> (List, OrderedDict, List):
         """
 
         Returns:
-            (mapping, rules)
+            (variables, mapping, rules)
 
+            mapping: List
             mapping: OrderedDict "attribute.code:attribute.values.get(value)" --> (var1, val1), (var2, val2)
             invalid_values: List
 
         """
-        vars = tuple("{}_{:06d}".format(self.code, n)
+        vars = tuple("{}_{:d}".format(self.code, n)
                for n in range(self.size()))
         mapping = OrderedDict()
         invalid_values = []
@@ -46,13 +48,13 @@ class Attribute:
         for n in range(max_used_val + 1, max_val + 1):
             invalid_value = []
             for n, k in enumerate(self._binary_representation(n)):
-                atom=vars[n]
+                atom = vars[n]
                 if not k:
-                    atom = "!{}".format(atom)
+                    atom = "~{}".format(atom)
                 invalid_value.append(atom)
-            invalid_value = " & ".join(invalid_value)
+            invalid_value = " /\ ".join(invalid_value)
             invalid_values.append(invalid_value)
-        return mapping, invalid_values
+        return vars, mapping, invalid_values
 
     def _binary_representation(self, n, width=None):
         if width is None:
@@ -73,6 +75,7 @@ class ConfigBDD:
         self.variables = []
         self.mapping = None
         self.invalid_values = None
+        self.bdd = None
 
     def append_attribute(self, attribute: Attribute):
         self.attributes.append(attribute)
@@ -82,13 +85,27 @@ class ConfigBDD:
         """
         mapping_dict = OrderedDict()
         invalid_values = []
+        vars = []
         for attr in self.attributes:
-            attr_mapping, invalid_attr_values = attr.decompose()
+            attr_vars, attr_mapping, attr_invalid_values = attr.decompose()
             mapping_dict.update(attr_mapping)
-            if invalid_attr_values:
-                invalid_values.extend(invalid_attr_values)
+            if attr_invalid_values:
+                invalid_values.extend(attr_invalid_values)
+            vars.extend(attr_vars)
+        self.variables = vars
         self.mapping = mapping_dict
         self.invalid_values = invalid_values
+
+    def init_bdd(self):
+        self.decompose()
+        self.bdd = _bdd.BDD()
+        for var in self.variables:
+            self.bdd.add_var(var)
+        for expr in self.invalid_values:
+            self.bdd.add_expr(expr)
+
+    def add_expr(self, expr, **kwargs):
+        return self.bdd.add_expr(expr, **kwargs)
 
     def parse_workbook(self, filename: str):
         ws = openpyxl.load_workbook(filename).worksheets[0]
